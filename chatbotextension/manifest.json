@@ -2,10 +2,22 @@
   "manifest_version": 3,
   "name": "AI Classroom Assistant",
   "version": "1.0",
-  "description": "AI assistant to answer real-time classroom doubts.",
+  "description": "An AI-powered real-time classroom assistant with voice input and chat capabilities.",
   "action": {
-    "default_popup": "popup.html"
-  },
-  "permissions": ["activeTab", "scripting"],
-  "host_permissions": ["http://127.0.0.1:5000/"]
+    "default_popup": "popup.html",
+    "permissions": [
+      "storage",
+      "activeTab",
+      "scripting"
+    ],
+    "host_permissions": [
+      "<all_urls>"
+    ],
+    "optional_permissions": [
+      "audioCapture"
+    ],
+    "content_security_policy": {
+      "extension_pages": "script-src 'self'; object-src 'self';"
+    }
+  }
 }

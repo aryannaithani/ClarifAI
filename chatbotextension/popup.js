@@ -1,235 +1,258 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
     const chatMessages = document.getElementById('chat-messages');
     const submitButton = messageForm.querySelector('button[type="submit"]');
+    const micBtn = document.getElementById('mic-btn');
 
-    // Fetch existing messages when page loads
+    let recognition = null;
+
+    // Fetch existing messages
     fetchMessages();
 
-    // Set up event listener for form submission
-    messageForm.addEventListener('submit', function(e) {
+    // Form submit
+    messageForm.addEventListener('submit', function (e) {
         e.preventDefault();
-
         const message = messageInput.value.trim();
         if (message) {
-            // Display user message immediately
             displayUserMessage(message);
-
-            // Clear input and disable form
             messageInput.value = '';
             setFormDisabled(true);
-
-            // Show typing indicator
             showTypingIndicator();
-
-            // Send message to server
             sendMessage(message);
         }
     });
 
-    // Function to send messages to the server
+    // Microphone Setup
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        if (micBtn) {
+            micBtn.disabled = false;
+            micBtn.addEventListener('click', function () {
+                if (micBtn.classList.contains('listening')) {
+                    recognition.stop();
+                } else {
+                    checkNetworkConnectivity()
+                        .then(() => {
+                            try {
+                                micBtn.disabled = true;
+                                setTimeout(() => {
+                                    if (!micBtn.classList.contains('listening')) {
+                                        micBtn.disabled = false;
+                                    }
+                                }, 100);
+                                recognition.start();
+                            } catch (err) {
+                                console.error('Failed to start speech recognition:', err);
+                                displayErrorMessage('Voice recognition could not start. Try again.');
+                            }
+                        })
+                        .catch(() => {
+                            displayErrorMessage('Internet connection required for voice input.');
+                        });
+                }
+            });
+
+            recognition.onstart = () => {
+                micBtn.classList.add('listening');
+                micBtn.innerHTML = '<i class="fas fa-microphone-lines"></i>';
+            };
+
+            recognition.onend = () => {
+                micBtn.classList.remove('listening');
+                micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                micBtn.disabled = false;
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event);
+                let errorMessage = 'Voice recognition failed: ';
+                switch (event.error) {
+                    case 'no-speech':
+                        errorMessage += 'No speech detected.';
+                        break;
+                    case 'audio-capture':
+                        errorMessage += 'Microphone not accessible.';
+                        break;
+                    case 'not-allowed':
+                        errorMessage += 'Microphone access denied.';
+                        break;
+                    case 'network':
+                        errorMessage += 'Network error. Use HTTPS or a supported browser.';
+                        break;
+                    case 'service-not-allowed':
+                        errorMessage += 'Speech service blocked. Use Chrome over HTTPS.';
+                        break;
+                    case 'aborted':
+                        errorMessage += 'Speech recognition aborted.';
+                        break;
+                    default:
+                        errorMessage += event.error;
+                }
+                displayErrorMessage(errorMessage);
+                micBtn.classList.remove('listening');
+                micBtn.textContent = '🎤';
+                micBtn.disabled = false;
+            };
+
+            recognition.onresult = (event) => {
+                const voiceText = event.results[0][0].transcript;
+                messageInput.value = voiceText;
+                setTimeout(() => {
+                    messageForm.dispatchEvent(new Event('submit'));
+                }, 300);
+            };
+        }
+    } else {
+        if (micBtn) {
+            micBtn.disabled = true;
+            micBtn.title = 'Voice input not supported in this browser.';
+            micBtn.style.opacity = '0.5';
+        }
+    }
+
+    function checkNetworkConnectivity() {
+        return new Promise((resolve, reject) => {
+            if (!navigator.onLine) {
+                reject(new Error('Offline'));
+            } else {
+                fetch('https://www.google.com/favicon.ico', { method: 'HEAD', mode: 'no-cors' })
+                    .then(() => resolve(true))
+                    .catch(() => reject(new Error('Network failed')));
+            }
+        });
+    }
+
     function sendMessage(message) {
         const formData = new FormData();
         formData.append('message', message);
 
-        fetch('http://127.0.0.1:5000/send_message', {
+        fetch('http://localhost:5000/send_message', {
             method: 'POST',
             body: formData
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Remove typing indicator
-            hideTypingIndicator();
-
-            // Display bot response - handle both possible response formats
-            if (data.response) {
-                displayBotMessage(data.response.content || data.response);
-            } else if (data.content) {
-                displayBotMessage(data.content);
-            } else {
-                console.log('Unexpected response format:', data);
-                displayErrorMessage('Received unexpected response format.');
-            }
-
-            // Re-enable form
-            setFormDisabled(false);
-
-            // Focus input for next message
-            messageInput.focus();
-
-            // Scroll to the bottom of the chat
-            scrollToBottom();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-
-            // Remove typing indicator and show error
-            hideTypingIndicator();
-            displayErrorMessage('Failed to send message. Please try again.');
-
-            // Re-enable form
-            setFormDisabled(false);
-            messageInput.focus();
-        });
-    }
-
-    // Function to fetch all messages
-    function fetchMessages() {
-        fetch('http://127.0.0.1:5000/get_messages')
-        .then(response => response.json())
-        .then(data => {
-            // Clear existing messages
-            chatMessages.innerHTML = '';
-
-            // Check if there are no messages and show empty state
-            if (!data.messages || data.messages.length === 0) {
-                showEmptyState();
-                return;
-            }
-
-            // Display each message
-            data.messages.forEach(message => {
-                if (message.is_user) {
-                    displayUserMessage(message.content, message.timestamp);
-                } else {
-                    displayBotMessage(message.content, message.timestamp);
-                }
+            .then(response => response.json())
+            .then(data => {
+                hideTypingIndicator();
+                displayBotMessage(data.response?.content || data.response || 'No response received.');
+                setFormDisabled(false);
+                messageInput.focus();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                hideTypingIndicator();
+                displayErrorMessage('Failed to send message.');
+                setFormDisabled(false);
             });
-
-            // Scroll to the bottom of the chat
-            scrollToBottom();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            displayErrorMessage('Failed to load messages.');
-        });
     }
 
-    // Function to display a user message
+    function fetchMessages() {
+        fetch('http://localhost:5000/get_messages')
+            .then(response => response.json())
+            .then(data => {
+                chatMessages.innerHTML = '';
+                if (!data.messages || data.messages.length === 0) {
+                    showEmptyState();
+                    return;
+                }
+
+                data.messages.forEach(msg => {
+                    if (msg.is_user) {
+                        displayUserMessage(msg.content, msg.timestamp);
+                    } else {
+                        displayBotMessage(msg.content, msg.timestamp);
+                    }
+                });
+                scrollToBottom();
+            })
+            .catch(err => {
+                console.error(err);
+                displayErrorMessage('Failed to load messages.');
+            });
+    }
+
     function displayUserMessage(content, timestamp = null) {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message', 'user');
-
-        const timeStr = timestamp || getCurrentTimeString();
-
-        messageElement.innerHTML = `
+        const el = document.createElement('div');
+        el.classList.add('message', 'user');
+        el.innerHTML = `
             <div class="message-content">${escapeHtml(content)}</div>
-            <div class="message-time">${timeStr}</div>
+            <div class="message-time">${timestamp || getCurrentTimeString()}</div>
         `;
-
-        chatMessages.appendChild(messageElement);
+        chatMessages.appendChild(el);
         scrollToBottom();
     }
 
-    // Function to display a bot message
     function displayBotMessage(content, timestamp = null) {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message', 'bot');
-
-        const timeStr = timestamp || getCurrentTimeString();
-
-        messageElement.innerHTML = `
+        const el = document.createElement('div');
+        el.classList.add('message', 'bot');
+        el.innerHTML = `
             <div class="message-content">${escapeHtml(content)}</div>
-            <div class="message-time">${timeStr}</div>
+            <div class="message-time">${timestamp || getCurrentTimeString()}</div>
         `;
-
-        chatMessages.appendChild(messageElement);
+        chatMessages.appendChild(el);
         scrollToBottom();
     }
 
-    // Function to show typing indicator
     function showTypingIndicator() {
-        // Remove existing typing indicator if any
         hideTypingIndicator();
-
-        const typingElement = document.createElement('div');
-        typingElement.classList.add('typing-indicator');
-        typingElement.id = 'typing-indicator';
-
-        typingElement.innerHTML = `
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-        `;
-
-        chatMessages.appendChild(typingElement);
+        const el = document.createElement('div');
+        el.id = 'typing-indicator';
+        el.classList.add('typing-indicator');
+        el.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>`;
+        chatMessages.appendChild(el);
         scrollToBottom();
     }
 
-    // Function to hide typing indicator
     function hideTypingIndicator() {
-        const typingIndicator = document.getElementById('typing-indicator');
-        if (typingIndicator) {
-            typingIndicator.remove();
-        }
+        const el = document.getElementById('typing-indicator');
+        if (el) el.remove();
     }
 
-    // Function to show empty state
     function showEmptyState() {
-        const emptyStateElement = document.createElement('div');
-        emptyStateElement.classList.add('empty-state');
-        emptyStateElement.innerHTML = `
-            <h3>Welcome to Flask Chat!</h3>
-            <p>Start a conversation by typing a message below.</p>
-        `;
-        chatMessages.appendChild(emptyStateElement);
+        const el = document.createElement('div');
+        el.classList.add('empty-state');
+        el.innerHTML = `<h3>Welcome to the Chat</h3><p>Start a conversation below.</p>`;
+        chatMessages.appendChild(el);
     }
 
-    // Function to display error messages
-    function displayErrorMessage(errorText) {
-        const errorElement = document.createElement('div');
-        errorElement.classList.add('message', 'bot');
-        errorElement.style.background = '#fee2e2';
-        errorElement.style.borderColor = '#fecaca';
-        errorElement.style.color = '#dc2626';
-
-        errorElement.innerHTML = `
-            <div class="message-content">⚠️ ${escapeHtml(errorText)}</div>
+    function displayErrorMessage(msg) {
+        const el = document.createElement('div');
+        el.classList.add('message', 'bot');
+        el.style.background = '#fee2e2';
+        el.style.borderColor = '#fecaca';
+        el.style.color = '#dc2626';
+        el.innerHTML = `
+            <div class="message-content">⚠️ ${escapeHtml(msg)}</div>
             <div class="message-time">${getCurrentTimeString()}</div>
         `;
-
-        chatMessages.appendChild(errorElement);
+        chatMessages.appendChild(el);
         scrollToBottom();
     }
 
-    // Function to enable/disable form
     function setFormDisabled(disabled) {
         messageInput.disabled = disabled;
         submitButton.disabled = disabled;
-
-        if (disabled) {
-            submitButton.textContent = 'Sending...';
-        } else {
-            submitButton.textContent = 'Send';
-        }
+        submitButton.textContent = disabled ? 'Sending...' : 'Send';
     }
 
-    // Function to scroll to the bottom of the chat
     function scrollToBottom() {
-        // Use setTimeout to ensure DOM has updated
         setTimeout(() => {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }, 10);
     }
 
-    // Function to get current time string
     function getCurrentTimeString() {
         const now = new Date();
-        return now.toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
-    // Function to escape HTML to prevent XSS
-    function escapeHtml(unsafe) {
-        return unsafe
+    function escapeHtml(text) {
+        return text
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
@@ -237,11 +260,9 @@ document.addEventListener('DOMContentLoaded', function() {
             .replace(/'/g, "&#039;");
     }
 
-    // Auto-focus on input when extension opens
     messageInput.focus();
 
-    // Handle Enter key in input (in case form doesn't catch it)
-    messageInput.addEventListener('keypress', function(e) {
+    messageInput.addEventListener('keypress', function (e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             messageForm.dispatchEvent(new Event('submit'));
