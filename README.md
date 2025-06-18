@@ -91,12 +91,12 @@ python main.py
 - The extension icon will appear on the toolbar.
 - Click it to open the chatbot in a popup.
 - Ask questions and get AI-generated responses in real-time — powered by your local Flask app.
+- 🎙️ Voice input is supported: click the mic icon and speak your question.
 
 ---
 
 ## 🔮 Future Features
 
-- 🎙️ **Voice Input**: Enable speech-to-text for hands-free interaction.
 - 📺 **Google Meet Integration**: Seamless overlay in Google Meet for real-time doubt resolution.
 - ✨ **Dynamic Context Awareness**: Improved understanding of ongoing classroom topics.
 - 📚 **Learning Analytics**: Track engagement and types of doubts for educators.
