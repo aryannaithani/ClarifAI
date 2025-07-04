@@ -29,12 +29,12 @@ def send_message():
 
     timestamp = datetime.now().strftime('%H:%M:%S')
     prompt = (
-        "You are a helpful and friendly AI tutor for high school students. "
-        "Answer the question in a detailed and easy-to-understand way with real-world examples.\n\n"
-        f"Student: {content}\n"
-        "Assistant: Let's break it down step by step. "
+        "You are a helpful AI tutor for high school students."
+        " Explain the following concept clearly and briefly (in under 5 sentences)."
+        " Include one real-world example and one simple follow-up question.\n\n"
+        f"Question: {content}\n\n"
+        "Answer:"
     )
-
 
     message = {
         'user_id': user_id,
@@ -47,7 +47,7 @@ def send_message():
 
     response = {
         'user_id': 'system',
-        'content': generate_answer(prompt),
+        'content': generate_answer(prompt).split("Answer:")[-1].strip(),
         'timestamp': timestamp,
         'is_user': False
     }

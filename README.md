@@ -1,6 +1,6 @@
 # 🧠 AI Classroom Assistant
 
-An AI-powered real-time classroom assistant built using FLAN-T5-Large and optimized with Intel OpenVINO. This project is designed to function both as a web-based chatbot and as a Chrome extension, making it easy for students and teachers to interact during live sessions.
+An AI-powered real-time classroom assistant built using Microsoft Phi-2 and optimized with Intel OpenVINO. This project is designed to function both as a web-based chatbot and as a Chrome extension, making it easy for students and teachers to interact during live sessions.
 
 ---
 
@@ -11,7 +11,6 @@ An AI-powered real-time classroom assistant built using FLAN-T5-Large and optimi
 - **Transformers (Hugging Face)** (For model handling)
 - **Intel OpenVINO** (For model optimization and faster inference)
 - **HTML/CSS/JavaScript** (Chat interface & Chrome extension)
-- **Google Chrome Extension API**
 
 ---
 
@@ -41,16 +40,16 @@ pip install -r requirements.txt
 
 ### 📁 3. Download the Optimized Model
 
-The OpenVINO-optimized FLAN-T5 model is too large to be stored in the repository.
+The OpenVINO-optimized Microsoft Phi-2 model is too large to be stored in the repository.
 
-**➡️ [Download the model from Google Drive](https://drive.google.com/file/d/19cG_zJHKsJ4gHKBWSnPSSO-5ltBk_vEO/view?usp=drive_link)**
+**➡️ [Download the model from Google Drive](https://drive.google.com/file/d/1cvPKY5FTYq06RCnXel17F4jcUjRmcmhX/view?usp=sharing)**
 
 - After downloading, **extract the model folder** into your project directory.
 - The final structure should look like this:
 
 ```
 aiClassroomAssistant/
-├── flan-t5-large-ov-fp32/
+├── phi-2-ov/
 │   ├── openvino_model.xml
 │   ├── openvino_model.bin
 │   └── ...
@@ -80,7 +79,7 @@ python main.py
 
 ### 📁 1. Load the Extension
 
-1. Open Google Chrome.
+1. Open Google Chrome (or any other chromium based browser).
 2. Go to `chrome://extensions`.
 3. Enable **Developer Mode** (top right).
 4. Click **"Load Unpacked"**.
@@ -91,7 +90,7 @@ python main.py
 - The extension icon will appear on the toolbar.
 - Click it to open the chatbot in a popup.
 - Ask questions and get AI-generated responses in real-time — powered by your local Flask app.
-- 🎙️ Voice input is supported: click the mic icon and speak your question.
+- Voice input is supported: click the mic icon and speak your question.
 
 ---
 
