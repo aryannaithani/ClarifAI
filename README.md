@@ -1,16 +1,16 @@
-# 🧠 AI Classroom Assistant
+# 📎 AI Classroom Assistant – Chrome Extension Powered by Phi-2 + OpenVINO
 
-An AI-powered real-time classroom assistant built using Microsoft Phi-2 and optimized with Intel OpenVINO. This project is designed to function both as a web-based chatbot and as a Chrome extension, making it easy for students and teachers to interact during live sessions.
+An AI-powered **Chrome extension** designed to assist students in real time using the **Phi-2 language model optimized with Intel OpenVINO**. It runs locally, uses a lightweight backend, and supports **voice input** for hands-free interaction — making it a perfect assistant during online or in-person classroom sessions.
 
 ---
 
 ## 🚀 Technologies Used
 
-- **Python** (Core backend language)
-- **Flask** (Web framework for serving the chatbot)
-- **Transformers (Hugging Face)** (For model handling)
-- **Intel OpenVINO** (For model optimization and faster inference)
-- **HTML/CSS/JavaScript** (Chat interface & Chrome extension)
+- **Python + Flask** – lightweight backend server
+- **Intel OpenVINO** – optimized inference for Microsoft Phi-2 model
+- **Transformers (Hugging Face)** – for tokenizer/model utilities
+- **HTML/CSS/JavaScript** – Chrome Extension UI with voice input
+- **Web Speech API** – for speech-to-text functionality
 
 ---
 
@@ -23,86 +23,73 @@ git clone https://github.com/aryannaithani/aiClassroomAssistant.git
 cd aiClassroomAssistant
 ```
 
-### 📦 2. Install Required Dependencies
+### 📦 2. Set Up the Backend
 
-Create a virtual environment (recommended):
+1. **Create and activate a virtual environment:**
 
-```bash
-python -m venv .venv
-source .venv/bin/activate     # On Windows: .venv\Scripts\activate
-```
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate     # On Windows: .venv\Scripts\activate
+   ```
 
-Install the dependencies:
+2. **Install Python dependencies:**
 
-```bash
-pip install -r requirements.txt
-```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### 📁 3. Download the Optimized Model
+3. **Download and extract the optimized model:**
 
-The OpenVINO-optimized Microsoft Phi-2 model is too large to be stored in the repository.
+   ➡️ [Download Phi-2 (OpenVINO) model from Google Drive](https://drive.google.com/file/d/1cvPKY5FTYq06RCnXel17F4jcUjRmcmhX/view?usp=sharing)
 
-**➡️ [Download the model from Google Drive](https://drive.google.com/file/d/1cvPKY5FTYq06RCnXel17F4jcUjRmcmhX/view?usp=sharing)**
+   After extracting, the structure should be:
 
-- After downloading, **extract the model folder** into your project directory.
-- The final structure should look like this:
+   ```
+   aiClassroomAssistant/
+   ├── phi-2-ov/
+   │   ├── openvino_model.xml
+   │   ├── openvino_model.bin
+   ├── main.py
+   ├── modelLoading.py
+   └── ...
+   ```
 
-```
-aiClassroomAssistant/
-├── phi-2-ov/
-│   ├── openvino_model.xml
-│   ├── openvino_model.bin
-│   └── ...
-├── main.py
-├── modelLoading.py
-├── templates/
-├── static/
-└── ...
-```
+4. **Run the Flask server:**
 
----
+   ```bash
+   python main.py
+   ```
 
-## ▶️ Running the App
-
-### 🧠 1. Start the Flask Server
-
-```bash
-python main.py
-```
-
-- Visit `http://localhost:5000` in your browser or click on the link that appears in the console.
-- Type a question in the chat input box and get a response from the AI Assistant.
+   This will serve the model at `http://localhost:5000`.
 
 ---
 
-## 🌐 [Optional but Recommended] Use as Chrome Extension
+## 🌐 Chrome Extension Setup (Main Interface)
 
 ### 📁 1. Load the Extension
 
-1. Open Google Chrome (or any other chromium based browser).
-2. Go to `chrome://extensions`.
-3. Enable **Developer Mode** (top right).
-4. Click **"Load Unpacked"**.
-5. Select the `chatbotextension/` folder provided in the repository.
+1. Open **Chrome** or any Chromium browser.
+2. Navigate to `chrome://extensions`.
+3. Enable **Developer Mode**.
+4. Click **Load Unpacked** and select the `chatbotextension/` folder.
 
-### 💬 2. Use the Extension
+### 💬 2. Using the Extension
 
-- The extension icon will appear on the toolbar.
-- Click it to open the chatbot in a popup.
-- Ask questions and get AI-generated responses in real-time — powered by your local Flask app.
-- Voice input is supported: click the mic icon and speak your question.
+- Click the extension icon in the browser toolbar.
+- Ask your doubt by typing or using **🎤 voice input** (click the mic icon).
+- The chatbot responds using the optimized Phi-2 model via your local server.
 
 ---
 
-## 🔮 Future Features
+## 🔮 Future Enhancements
 
-- 📺 **Google Meet Integration**: Seamless overlay in Google Meet for real-time doubt resolution.
-- ✨ **Dynamic Context Awareness**: Improved understanding of ongoing classroom topics.
-- 📚 **Learning Analytics**: Track engagement and types of doubts for educators.
+- 📺 **Google Meet Overlay**: Display AI responses directly during live classes.
+- 🧠 **Dynamic Context Awareness**: Understand current topics in class.
+- 📊 **Analytics Dashboard**: Track student queries and engagement patterns.
 
 ---
 
 ## 📩 Feedback & Contributions
 
-Feel free to fork the repository, suggest changes, or raise issues.  
-For queries, reach out via GitHub or email at `aryan.naithani_cs.h24@gla.ac.in`
+Have suggestions or want to contribute? Fork this repo or raise an issue!  
+📧 Email: `aryan.naithani_cs.h24@gla.ac.in`
