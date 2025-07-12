@@ -1,4 +1,4 @@
-# 🧠 ClarifAI – Context-Aware Chrome Assistant Powered by Phi-2 + OpenVINO
+# 🧠 ClarifAI – Context-Aware Classroom Assistant Powered by Phi-2 + OpenVINO
 
 **ClarifAI** is a real-time AI-powered **Chrome Extension** designed to assist students during online or in-person classroom sessions. Powered by **Microsoft's Phi-2 model**, optimized with **Intel OpenVINO**, it runs locally with a lightweight Flask backend. With support for **voice input** and **contextual awareness via Google Meet captions**, ClarifAI ensures seamless and intelligent doubt resolution when students need it most.
 
