@@ -4,8 +4,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const chatMessages = document.getElementById('chat-messages');
     const submitButton = messageForm.querySelector('button[type="submit"]');
     const micBtn = document.getElementById('mic-btn');
+    const contextToggle = document.getElementById('context-toggle');
 
     let recognition = null;
+    let useContext = false;
+
+    // Initialize context toggle
+    if (contextToggle) {
+        contextToggle.addEventListener('change', () => {
+            useContext = contextToggle.checked;
+        });
+    }
 
     // Fetch existing messages
     fetchMessages();
@@ -129,8 +138,23 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function sendMessage(message) {
+        if (useContext) {
+            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                chrome.tabs.sendMessage(tabs[0].id, { type: 'GET_TRANSCRIPT' }, function (response) {
+                    const transcript = response?.transcript || "";
+                    console.log("Context Captured", transcript);
+                    sendToServer(message, transcript);
+                });
+            });
+        } else {
+            sendToServer(message, "");
+        }
+    }
+
+    function sendToServer(message, context) {
         const formData = new FormData();
         formData.append('message', message);
+        formData.append('context', context);
 
         fetch('http://localhost:5000/send_message', {
             method: 'POST',

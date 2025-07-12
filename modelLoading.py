@@ -8,7 +8,7 @@ def generate_answer(question):
     inputs = tokenizer(question, return_tensors="pt")
     outputs = model.generate(
         inputs["input_ids"],
-        max_length=256,
+        max_new_token=128,
         temperature=0.8,
         top_p=0.95,
         top_k=50,

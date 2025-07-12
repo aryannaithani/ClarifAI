@@ -22,19 +22,35 @@ def index():
 @app.route('/send_message', methods=['POST'])
 def send_message():
     content = request.form.get('message')
+    transcript = request.form.get('context')
     user_id = session.get('user_id', str(uuid.uuid4()))
+    if len(transcript.split()) > 100:
+        transcript = ' '.join(transcript.split[-100:])
 
     if not content:
         return jsonify({'error': 'Message cannot be empty'}), 400
 
     timestamp = datetime.now().strftime('%H:%M:%S')
-    prompt = (
+    if not transcript:
+        prompt = (
         "You are a helpful AI tutor for high school students."
         " Explain the following concept clearly and briefly (in under 5 sentences)."
         " Include one real-world example and one simple follow-up question.\n\n"
         f"Question: {content}\n\n"
         "Answer:"
     )
+    else:
+        prompt = (
+            "You are a helpful AI tutor for high school students."
+            " Explain the following concept clearly and briefly (in under 5 sentences)."
+            " Include one real-world example and one simple follow-up question."
+            " Use the given class transcript and reference to that in the answer if you see fit.\n\n"
+            f"Question: {content}\n\n"
+            f"Class Transcript: {transcript}\n\n"
+            "Answer:"
+        )
+
+    print(prompt)
 
     message = {
         'user_id': user_id,
