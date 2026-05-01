@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('message', message);
         formData.append('context', context);
 
-        fetch('http://localhost:5000/send_message', {
+        fetch('http://localhost:8000/send_message', {
             method: 'POST',
             body: formData
         })
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function fetchMessages() {
-        fetch('http://localhost:5000/get_messages')
+        fetch('http://localhost:8000/get_messages')
             .then(response => response.json())
             .then(data => {
                 chatMessages.innerHTML = '';
