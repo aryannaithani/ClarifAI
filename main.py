@@ -50,8 +50,6 @@ async def send_message(message: str = Form(...), context: str = Form(default="")
             "Answer:"
         )
 
-    print(prompt)
-
     user_message = {
         'user_id': user_id,
         'content': message,
@@ -75,3 +73,7 @@ async def send_message(message: str = Form(...), context: str = Form(default="")
 @app.get("/get_messages")
 async def get_messages():
     return {'messages': messages}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
